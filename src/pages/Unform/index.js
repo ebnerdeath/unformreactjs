@@ -25,29 +25,71 @@ const schema = Yup.object().shape({
 
 class Unform extends Component {
   state = {
-    name: "",
-    username: "",
-    email: "",
-    address: {
-      street: "",
-      number: 0
+    nameButton: "Cadastrar",
+    userSelected: null,
+    user: {
+      name: "",
+      username: "",
+      email: "",
+      address: {
+        street: "",
+        number: null
+      }
     }
   };
 
-  componentDidMount() {
+  getUserRequest = () => {
     const { getUsersRequest } = this.props;
 
-    console.tron.log("ComponentDidMount");
-
     getUsersRequest();
+  };
+
+  componentDidMount() {
+    this.getUserRequest();
   }
 
+  handleClearInputs = () => {
+    this.setState({
+      user: {
+        name: "",
+        username: "",
+        email: "",
+        address: {
+          street: "",
+          number: null
+        }
+      }
+    });
+  };
+
   handleSubmit(data) {
-    console.log(data);
+    const { nameButton, userSelected } = this.state;
+    const { newUserRequest, updateUserRequest, clearDataUser } = this.props;
+
+    if (nameButton === "Cadastrar") {
+      newUserRequest(data);
+    } else if (nameButton === "Salvar") {
+      data.id = userSelected;
+      updateUserRequest(data);
+    }
+
+    clearDataUser();
+    this.handleClearInputs();
+    this.setState({ nameButton: "Cadastrar", userSelected: null });
   }
 
   handleUpdate(id) {
-    console.log(id);
+    const { getUserFromIdRequest, userSelected } = this.props;
+
+    getUserFromIdRequest(id);
+
+    console.tron.log(userSelected);
+
+    this.setState({
+      nameButton: "Salvar",
+      userSelected: id,
+      user: userSelected
+    });
   }
 
   handleDelete(id) {
@@ -55,31 +97,58 @@ class Unform extends Component {
   }
 
   render() {
-    const { users, loading } = this.props;
+    const { users, loading, userSelected } = this.props;
+    const { nameButton } = this.state;
+    const { name, username, email, street, number } = this.state.user;
     return (
       <Container>
         <SignForm>
           <h2>Exemplo de Crud com Unform</h2>
           <Form
             schema={schema}
-            initialData={this.state}
+            initialData={this.state.user}
             onSubmit={e => this.handleSubmit(e)}
           >
-            <Input name="name" label="Nome: " />
+            <Input
+              name="name"
+              value={name}
+              onChange={e => this.setState({ name: e.target.value })}
+              label="Nome: "
+            />
             <br />
-            <Input name="username" label="Usuário: " />
+            <Input
+              name="username"
+              value={username}
+              onChange={e => this.setState({ username: e.target.value })}
+              label="Usuário: "
+            />
             <br />
-            <Input name="email" label="Email: " />
+            <Input
+              name="email"
+              value={email}
+              onChange={e => this.setState({ email: e.target.value })}
+              label="Email: "
+            />
             <br />
             <Scope path="address">
-              <Input name="street" label="Rua: " />
+              <Input
+                name="street"
+                value={street}
+                onChange={e => this.setState({ street: e.target.value })}
+                label="Rua: "
+              />
               <br />
-              <Input name="number" label="Número: " />
+              <Input
+                name="number"
+                value={number}
+                onChange={e => this.setState({ number: e.target.value })}
+                label="Número: "
+              />
               <br />
             </Scope>
 
             <ButtonForm size="big" type="submit">
-              Cadastrar
+              {nameButton}
             </ButtonForm>
           </Form>
         </SignForm>
@@ -137,6 +206,7 @@ class Unform extends Component {
 
 const mapStateToProps = state => ({
   users: state.user,
+  userSelected: state.user.dataUser,
   loading: state.user.loading
 });
 
