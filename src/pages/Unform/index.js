@@ -3,6 +3,10 @@ import * as Yup from "yup";
 import { Form, Input, Scope } from "@rocketseat/unform";
 import { Container, SignForm, ButtonForm, TableForm } from "./styles";
 
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import UserActions from "../../store/ducks/user";
+
 import { FaTrash, FaPen } from "react-icons/fa";
 
 const schema = Yup.object().shape({
@@ -21,14 +25,22 @@ const schema = Yup.object().shape({
 
 class Unform extends Component {
   state = {
-    name: "Ebner",
-    username: "ebnerdeath",
-    email: "ebner.suporte@hotmail.com",
+    name: "",
+    username: "",
+    email: "",
     address: {
-      street: "Rua Goiás",
-      number: 262
+      street: "",
+      number: 0
     }
   };
+
+  componentDidMount() {
+    const { getUsersRequest } = this.props;
+
+    console.tron.log("ComponentDidMount");
+
+    getUsersRequest();
+  }
 
   handleSubmit(data) {
     console.log(data);
@@ -43,6 +55,7 @@ class Unform extends Component {
   }
 
   render() {
+    const { users, loading } = this.props;
     return (
       <Container>
         <SignForm>
@@ -70,6 +83,7 @@ class Unform extends Component {
             </ButtonForm>
           </Form>
         </SignForm>
+        {loading ? <h4>Carregando... </h4> : null}
         <TableForm cellPadding={0} cellSpacing={0}>
           <thead>
             <tr>
@@ -84,50 +98,36 @@ class Unform extends Component {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Jill</td>
-              <td>Smith</td>
-              <td>jill@hotmail.com</td>
-              <td>Rua Paranaue</td>
-              <td>50</td>
-              <td>
-                <button onClick={() => this.handleUpdate(1)} type="button">
-                  <span>
-                    <FaPen color="#E1AD01" size={15} />
-                  </span>
-                </button>
-              </td>
-              <td>
-                <button onClick={() => this.handleDelete(1)} type="button">
-                  <span>
-                    <FaTrash color="#e04848" size={15} />
-                  </span>
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Eve</td>
-              <td>Jackson</td>
-              <td>jackson.tic@gmail.com</td>
-              <td>Rua tihuana</td>
-              <td>94</td>
-              <td>
-                <button onClick={() => this.handleUpdate(1)} type="button">
-                  <span>
-                    <FaPen color="#E1AD01" size={15} />
-                  </span>
-                </button>
-              </td>
-              <td>
-                <button onClick={() => this.handleDelete(1)} type="button">
-                  <span>
-                    <FaTrash color="#e04848" size={15} />
-                  </span>
-                </button>
-              </td>
-            </tr>
+            {users.data.map(user => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.name}</td>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>{user.street}</td>
+                <td>{user.number}</td>
+                <td>
+                  <button
+                    onClick={() => this.handleUpdate(user.id)}
+                    type="button"
+                  >
+                    <span>
+                      <FaPen color="#E1AD01" size={15} />
+                    </span>
+                  </button>
+                </td>
+                <td>
+                  <button
+                    onClick={() => this.handleDelete(user.id)}
+                    type="button"
+                  >
+                    <span>
+                      <FaTrash color="#e04848" size={15} />
+                    </span>
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </TableForm>
       </Container>
@@ -135,4 +135,15 @@ class Unform extends Component {
   }
 }
 
-export default Unform;
+const mapStateToProps = state => ({
+  users: state.user,
+  loading: state.user.loading
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(UserActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Unform);

@@ -14,15 +14,22 @@ export default Creators;
 /* Initial State */
 
 export const INITIAL_STATE = Immutable({
-  data: []
+  data: [],
+  loading: false
 });
 
 /* Reducers */
 
-export const success = (state, { data }) => state.merge({ data });
+export const request = state =>
+  state.merge({
+    loading: true
+  });
+export const success = (state, { data }) =>
+  state.merge({ data, loading: false });
 
 /* Reducers to types */
 
 export const reducer = createReducer(INITIAL_STATE, {
+  [Types.GET_USERS_REQUEST]: request,
   [Types.GET_USERS_SUCCESS]: success
 });
